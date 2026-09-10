@@ -1607,27 +1607,23 @@ public final class InputLogic {
                     int lengthToDelete =
                             Character.isSupplementaryCodePoint(codePointBeforeCursor) ? 2 : 1;
 
-                    // Handle emoji sequences (flags, etc)
-                    CharSequence textBeforeCursor = mConnection.getTextBeforeCursor(deleteWholeWords ? 48 : 8, 0);
-                    if (textBeforeCursor != null && textBeforeCursor.length() > 0) {
-                        BreakIterator breakIterator;
+                    if (deleteWholeWords) {
+                        CharSequence textBeforeCursor = mConnection.getTextBeforeCursor(48, 0);
+                        if (textBeforeCursor != null && textBeforeCursor.length() > 0) {
+                            BreakIterator breakIterator = BreakIterator.getWordInstance(inputTransaction.mSettingsValues.mLocale);
+                            breakIterator.setText(textBeforeCursor.toString());
 
-                        if(deleteWholeWords) {
-                            breakIterator = BreakIterator.getWordInstance();
-                        } else {
-                            breakIterator = BreakIterator.getCharacterInstance();
-                        }
-                        breakIterator.setText(textBeforeCursor.toString());
-                        int end = breakIterator.last();
-                        int start = breakIterator.previous();
+                            int end = breakIterator.last();
+                            int start = breakIterator.previous();
 
-                        if(deleteWholeWords && textBeforeCursor.subSequence(start, end).toString().equals(" ")) {
-                            start = breakIterator.previous();
-                        }
+                            if (textBeforeCursor.subSequence(start, end).toString().equals(" ")) {
+                                start = breakIterator.previous();
+                            }
 
-                        if (start != BreakIterator.DONE) {
-                            lengthToDelete = end - start;
-                            textDeleted = textBeforeCursor.subSequence(start, end).toString();
+                            if (start != BreakIterator.DONE) {
+                                lengthToDelete = end - start;
+                                textDeleted = textBeforeCursor.subSequence(start, end).toString();
+                            }
                         }
                     }
 
