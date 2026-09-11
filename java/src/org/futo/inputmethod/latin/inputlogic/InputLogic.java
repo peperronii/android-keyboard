@@ -16,6 +16,8 @@
 
 package org.futo.inputmethod.latin.inputlogic;
 
+import android.icu.lang.UCharacter;
+import android.icu.lang.UProperty;
 import android.os.SystemClock;
 import android.text.SpannableString;
 import android.text.TextUtils;
@@ -1619,6 +1621,21 @@ public final class InputLogic {
                             if (textBeforeCursor.subSequence(start, end).toString().equals(" ")) {
                                 start = breakIterator.previous();
                             }
+
+                            if (start != BreakIterator.DONE) {
+                                lengthToDelete = end - start;
+                                textDeleted = textBeforeCursor.subSequence(start, end).toString();
+                            }
+                        }
+                    } else if (UCharacter.hasBinaryProperty(codePointBeforeCursor, UProperty.EMOJI)
+                            || UCharacter.hasBinaryProperty(codePointBeforeCursor, UProperty.EMOJI_COMPONENT)) {
+                        CharSequence textBeforeCursor = mConnection.getTextBeforeCursor(32, 0);
+                        if (textBeforeCursor != null && textBeforeCursor.length() > 0) {
+                            BreakIterator breakIterator = BreakIterator.getCharacterInstance(inputTransaction.mSettingsValues.mLocale);
+                            breakIterator.setText(textBeforeCursor.toString());
+
+                            int end = breakIterator.last();
+                            int start = breakIterator.previous();
 
                             if (start != BreakIterator.DONE) {
                                 lengthToDelete = end - start;
